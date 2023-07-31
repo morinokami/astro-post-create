@@ -1,0 +1,40 @@
+{
+	"name": "astro-post-create",
+	"version": "0.0.1",
+	"author": "Shinya Fujino <shf0811@gamil.com> (https://github.com/morinokami)",
+	"description": "",
+	"license": "MIT",
+	"keywords": [],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/morinokami/astro-post-create"
+	},
+	"main": "dist/index.js",
+	"bin": {
+		"astro-post-create": "./dist/index.js"
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"dev": "npm run esbuild -- --watch",
+		"start": "node --enable-source-maps dist/index.js",
+		"build": "npm run esbuild",
+		"esbuild": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=node16 --outfile=dist/index.js"
+	},
+	"dependencies": {
+		"@clack/prompts": "^0.6.3",
+		"picocolors": "^1.0.0"
+	},
+	"devDependencies": {
+		"@types/node": "^18.17.1",
+		"@typescript-eslint/eslint-plugin": "^6.2.0",
+		"@typescript-eslint/parser": "^6.2.0",
+		"esbuild": "^0.18.17",
+		"eslint": "^8.46.0",
+		"eslint-config-prettier": "^8.9.0",
+		"eslint-plugin-simple-import-sort": "^10.0.0",
+		"prettier": "^3.0.0",
+		"typescript": "^5.1.6"
+	}
+}
