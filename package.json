@@ -7,7 +7,7 @@
 	"keywords": [],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/morinokami/astro-post-create"
+		"url": "https://github.com/morinokami/astro-post-create.git"
 	},
 	"main": "dist/index.js",
 	"bin": {
@@ -17,17 +17,23 @@
 		"dist"
 	],
 	"scripts": {
-		"dev": "npm run esbuild -- --watch",
+		"dev": "npm run _esbuild -- --watch",
 		"start": "node --enable-source-maps dist/index.js",
-		"build": "npm run esbuild",
-		"esbuild": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=node16 --outfile=dist/index.js"
+		"build": "npm run _esbuild",
+		"_esbuild": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=node16 --outfile=dist/index.js"
 	},
 	"dependencies": {
 		"@clack/prompts": "^0.6.3",
-		"picocolors": "^1.0.0"
+		"execa": "^7.2.0",
+		"latest-version": "^7.0.0",
+		"picocolors": "^1.0.0",
+		"read-pkg": "^8.0.0",
+		"which-pm-runs": "^1.1.0",
+		"write-pkg": "^6.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "^18.17.1",
+		"@types/which-pm-runs": "^1.0.0",
 		"@typescript-eslint/eslint-plugin": "^6.2.0",
 		"@typescript-eslint/parser": "^6.2.0",
 		"esbuild": "^0.18.17",

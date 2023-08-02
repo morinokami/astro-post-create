@@ -1,57 +1,55 @@
-import { setTimeout } from 'node:timers/promises';
+import fs from 'node:fs';
 
 import * as p from '@clack/prompts';
+import { execa } from 'execa';
+import latestVersion from 'latest-version';
 import color from 'picocolors';
+import { type NormalizedPackageJson, readPackage } from 'read-pkg';
+import detectPackageManager from 'which-pm-runs';
+import { addPackageDependencies } from 'write-pkg';
 
-throw new Error('This is an error');
+import * as conf from './conf';
 
 async function main() {
+	// Is there a package.json?
+	let pkgJson: NormalizedPackageJson | undefined;
+	try {
+		pkgJson = await readPackage();
+	} catch (err) {
+		console.error(
+			'No package.json found. Please run this command in the root of your Astro project.',
+		);
+		process.exit(1);
+	}
+	// Is this an Astro project?
+	const astroInstalled = pkgJson.dependencies?.astro !== undefined;
+	if (!astroInstalled) {
+		console.error(
+			'Astro not found. Please run this command in an Astro project.',
+		);
+		process.exit(1);
+	}
+	// What package manager is used?
+	const pkgManager = detectPackageManager()?.name ?? 'npm';
+
 	console.clear();
+	p.intro(`${color.bgCyan(color.black(' astro-post-create '))}`);
 
-	await setTimeout(1000);
-
-	p.intro(`${color.bgCyan(color.black(' create-app '))}`);
-
-	const project = await p.group(
+	const config = await p.group(
 		{
-			path: () =>
-				p.text({
-					message: 'Where should we create your project?',
-					placeholder: './sparkling-solid',
-					validate: (value) => {
-						if (!value) return 'Please enter a path.';
-						if (value[0] !== '.') return 'Please enter a relative path.';
-					},
-				}),
-			password: () =>
-				p.password({
-					message: 'Provide a password',
-					validate: (value) => {
-						if (!value) return 'Please enter a password.';
-						if (value.length < 5)
-							return 'Password should have at least 5 characters.';
-					},
-				}),
-			type: ({ results }) =>
-				p.select({
-					message: `Pick a project type within "${results.path}"`,
-					initialValue: 'ts',
-					options: [
-						{ value: 'ts', label: 'TypeScript' },
-						{ value: 'js', label: 'JavaScript' },
-						{ value: 'coffee', label: 'CoffeeScript', hint: 'oh no' },
-					],
-				}),
 			tools: () =>
 				p.multiselect({
-					message: 'Select additional tools.',
-					initialValues: ['prettier', 'eslint'],
+					message: 'Which tools do you want to use?',
 					options: [
-						{ value: 'prettier', label: 'Prettier', hint: 'recommended' },
-						{ value: 'eslint', label: 'ESLint', hint: 'recommended' },
-						{ value: 'stylelint', label: 'Stylelint' },
-						{ value: 'gh-action', label: 'GitHub Action' },
+						{ value: 'prettier', label: 'Prettier' },
+						{ value: 'eslint', label: 'ESLint' },
 					],
+					required: true,
+				}),
+			generate: () =>
+				p.confirm({
+					message: 'Generate config files?',
+					initialValue: false,
 				}),
 			install: () =>
 				p.confirm({
@@ -67,18 +65,85 @@ async function main() {
 		},
 	);
 
-	if (project.install) {
-		const s = p.spinner();
-		s.start('Installing via pnpm');
-		await setTimeout(5000);
-		s.stop('Installed via pnpm');
+	// Update package.json
+	const cwd = process.cwd();
+	let s = p.spinner();
+	s.start('Updating package.json');
+	try {
+		const deps: Record<string, Promise<string>> = {};
+		for (const tool of config.tools) {
+			if (tool === 'prettier') {
+				deps.prettier = latestVersion('prettier');
+				deps['prettier-plugin-astro'] = latestVersion('prettier-plugin-astro');
+			}
+			if (tool === 'eslint') {
+				deps.eslint = latestVersion('eslint');
+				deps['eslint-plugin-astro'] = latestVersion('eslint-plugin-astro');
+				deps['@typescript-eslint/eslint-plugin'] = latestVersion(
+					'@typescript-eslint/eslint-plugin',
+				);
+			}
+		}
+		const resolvedDeps = await Promise.all(
+			Object.entries(deps).map(async ([name, versionPromise]) => {
+				const version = await versionPromise;
+				return [name, version];
+			}),
+		);
+		await addPackageDependencies(cwd, {
+			devDependencies: Object.fromEntries(resolvedDeps),
+		});
+	} catch (err) {
+		console.error('Failed to update package.json');
+		process.exit(1);
+	}
+	s.stop('Updated package.json');
+
+	// Generate config files
+	if (config.generate) {
+		let skipped = true;
+		s = p.spinner();
+		s.start('Generating config files');
+		for (const tool of config.tools) {
+			// Don't overwrite existing config files
+			if (
+				tool === 'prettier' &&
+				!fs.existsSync('./.prettierrc') &&
+				!fs.existsSync('./.prettierignore')
+			) {
+				fs.writeFileSync('./.prettierrc', conf.prettierrc);
+				fs.writeFileSync('./.prettierignore', conf.prettierignore);
+				skipped = false;
+			}
+			if (
+				tool === 'eslint' &&
+				!fs.existsSync('./.eslintrc.cjs') &&
+				!fs.existsSync('./.eslintignore')
+			) {
+				fs.writeFileSync('./.eslintrc.cjs', conf.eslintrc);
+				fs.writeFileSync('./.eslintignore', conf.eslintignore);
+				skipped = false;
+			}
+		}
+		s.stop(
+			skipped
+				? 'Skipped generating config files: already exists'
+				: 'Generated config files',
+		);
 	}
 
-	const nextSteps = `cd ${project.path}        \n${
-		project.install ? '' : 'pnpm install\n'
-	}pnpm dev`;
-
-	p.note(nextSteps, 'Next steps.');
+	// Install dependencies
+	if (config.install) {
+		s = p.spinner();
+		s.start(`Installing dependencies via ${pkgManager}`);
+		try {
+			await execa(pkgManager, ['install']);
+		} catch (err) {
+			console.error(`Failed to install dependencies`);
+			process.exit(1);
+		}
+		s.stop(`Installed dependencies via ${pkgManager}`);
+	}
 
 	p.outro(
 		`Problems? ${color.underline(color.cyan('https://example.com/issues'))}`,
