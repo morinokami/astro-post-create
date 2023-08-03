@@ -145,8 +145,12 @@ async function main() {
 		s.stop(`Installed dependencies via ${pkgManager}`);
 	}
 
+	p.note('https://docs.astro.build/en/editor-setup/', 'Learn more');
+
 	p.outro(
-		`Problems? ${color.underline(color.cyan('https://example.com/issues'))}`,
+		`Problems? ${color.underline(
+			color.cyan('https://github.com/morinokami/astro-post-create/issues'),
+		)}`,
 	);
 }
 
