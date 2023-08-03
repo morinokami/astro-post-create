@@ -94,7 +94,7 @@ async function main() {
 			devDependencies: Object.fromEntries(resolvedDeps),
 		});
 	} catch (err) {
-		console.error('Failed to update package.json');
+		p.cancel(`Failed to update package.json: ${err}`);
 		process.exit(1);
 	}
 	s.stop('Updated package.json');
@@ -139,7 +139,7 @@ async function main() {
 		try {
 			await execa(pkgManager, ['install']);
 		} catch (err) {
-			console.error(`Failed to install dependencies`);
+			p.cancel(`Failed to install dependencies: ${err}`);
 			process.exit(1);
 		}
 		s.stop(`Installed dependencies via ${pkgManager}`);
