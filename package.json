@@ -2,9 +2,13 @@
 	"name": "astro-post-create",
 	"version": "0.0.1",
 	"author": "Shinya Fujino <shf0811@gamil.com> (https://github.com/morinokami)",
-	"description": "",
+	"description": "Install additional tools to your Astro project easily.",
 	"license": "MIT",
-	"keywords": [],
+	"keywords": [
+		"astro",
+		"eslint",
+		"prettier"
+	],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/morinokami/astro-post-create.git"
