@@ -15,3 +15,5 @@ Next, navigate to the newly created project directory and run the following comm
 ```sh
 npx astro-post-create
 ```
+
+![astro-post-create-demo](.github/assets/screen-recording.gif)
