@@ -110,10 +110,10 @@ async function main() {
 			// Don't overwrite existing config files
 			if (
 				tool === 'prettier' &&
-				!fs.existsSync('./.prettierrc') &&
+				!fs.existsSync('./.prettierrc.cjs') &&
 				!fs.existsSync('./.prettierignore')
 			) {
-				fs.writeFileSync('./.prettierrc', conf.prettierrc);
+				fs.writeFileSync('./.prettierrc.cjs', conf.prettierrc);
 				fs.writeFileSync('./.prettierignore', conf.prettierignore);
 				skipped = false;
 			}

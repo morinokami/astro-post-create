@@ -6,8 +6,8 @@ export const eslintrc = `module.exports = {
   },
   extends: ["eslint:recommended", "plugin:astro/recommended"],
   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
+    ecmaVersion: "latest",
+    sourceType: "module",
   },
   overrides: [
     {
@@ -23,6 +23,16 @@ export const eslintrc = `module.exports = {
 };`;
 export const eslintignore = `node_modules
 dist`;
-export const prettierrc = `{}`;
+export const prettierrc = `module.exports = {
+  plugins: [require.resolve("prettier-plugin-astro")],
+  overrides: [
+    {
+      files: "*.astro",
+      options: {
+        parser: "astro",
+      },
+    },
+  ],
+};`;
 export const prettierignore = `node_modules
 dist`;
