@@ -1,6 +1,6 @@
 {
 	"name": "astro-post-create",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"author": "Shinya Fujino <shf0811@gamil.com> (https://github.com/morinokami)",
 	"description": "Install additional tools to your Astro project easily.",
 	"license": "MIT",
